@@ -3,19 +3,35 @@ use serde::Deserialize;
 use std::process::Command;
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct Issue {
     pub number: u64,
     pub title: String,
     pub url: String,
+    pub state: String,
+    #[serde(default)]
+    pub labels: Vec<LabelRef>,
+    pub created_at: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
 #[allow(dead_code)]
 pub struct PullRequest {
     pub number: u64,
     pub title: String,
     pub url: String,
+    pub state: String,
+    #[serde(default)]
+    pub labels: Vec<LabelRef>,
+    pub created_at: String,
+    pub merged_at: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct LabelRef {
+    pub name: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -27,7 +43,9 @@ pub trait GitHost {
     fn create_label(&self, name: &str, color: &str, description: &str) -> Result<()>;
     fn list_secrets(&self) -> Result<Vec<Secret>>;
     fn list_issues(&self, label: &str) -> Result<Vec<Issue>>;
+    fn list_issues_any_label(&self, labels: &[&str]) -> Result<Vec<Issue>>;
     fn list_prs(&self, label: &str) -> Result<Vec<PullRequest>>;
+    fn list_prs_any_label(&self, labels: &[&str]) -> Result<Vec<PullRequest>>;
 }
 
 pub struct GhCli;
@@ -46,9 +64,11 @@ impl GhCli {
     }
 }
 
+const ISSUE_FIELDS: &str = "number,title,url,state,labels,createdAt";
+const PR_FIELDS: &str = "number,title,url,state,labels,createdAt,mergedAt";
+
 impl GitHost for GhCli {
     fn create_label(&self, name: &str, color: &str, description: &str) -> Result<()> {
-        // --force makes this idempotent (updates if exists)
         let _ = Self::run(&[
             "label",
             "create",
@@ -74,25 +94,49 @@ impl GitHost for GhCli {
             "--label",
             label,
             "--limit",
-            "20",
+            "50",
             "--json",
-            "number,title,url",
+            ISSUE_FIELDS,
         ])?;
         Ok(serde_json::from_slice(&output)?)
     }
 
+    fn list_issues_any_label(&self, labels: &[&str]) -> Result<Vec<Issue>> {
+        // gh issue list doesn't support OR on labels, so we query each and deduplicate
+        let mut all = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        for label in labels {
+            if let Ok(issues) = self.list_issues(label) {
+                for issue in issues {
+                    if seen.insert(issue.number) {
+                        all.push(issue);
+                    }
+                }
+            }
+        }
+        Ok(all)
+    }
+
     fn list_prs(&self, label: &str) -> Result<Vec<PullRequest>> {
         let output = Self::run(&[
-            "pr",
-            "list",
-            "--label",
-            label,
-            "--limit",
-            "20",
-            "--json",
-            "number,title,url",
+            "pr", "list", "--label", label, "--limit", "50", "--state", "all", "--json", PR_FIELDS,
         ])?;
         Ok(serde_json::from_slice(&output)?)
+    }
+
+    fn list_prs_any_label(&self, labels: &[&str]) -> Result<Vec<PullRequest>> {
+        let mut all = Vec::new();
+        let mut seen = std::collections::HashSet::new();
+        for label in labels {
+            if let Ok(prs) = self.list_prs(label) {
+                for pr in prs {
+                    if seen.insert(pr.number) {
+                        all.push(pr);
+                    }
+                }
+            }
+        }
+        Ok(all)
     }
 }
 
@@ -140,12 +184,40 @@ pub mod fake {
             Ok(self.secrets.clone())
         }
 
-        fn list_issues(&self, _label: &str) -> Result<Vec<Issue>> {
-            Ok(self.issues.clone())
+        fn list_issues(&self, label: &str) -> Result<Vec<Issue>> {
+            Ok(self
+                .issues
+                .iter()
+                .filter(|i| i.labels.iter().any(|l| l.name == label))
+                .cloned()
+                .collect())
         }
 
-        fn list_prs(&self, _label: &str) -> Result<Vec<PullRequest>> {
-            Ok(self.prs.clone())
+        fn list_issues_any_label(&self, labels: &[&str]) -> Result<Vec<Issue>> {
+            Ok(self
+                .issues
+                .iter()
+                .filter(|i| i.labels.iter().any(|l| labels.contains(&l.name.as_str())))
+                .cloned()
+                .collect())
+        }
+
+        fn list_prs(&self, label: &str) -> Result<Vec<PullRequest>> {
+            Ok(self
+                .prs
+                .iter()
+                .filter(|p| p.labels.iter().any(|l| l.name == label))
+                .cloned()
+                .collect())
+        }
+
+        fn list_prs_any_label(&self, labels: &[&str]) -> Result<Vec<PullRequest>> {
+            Ok(self
+                .prs
+                .iter()
+                .filter(|p| p.labels.iter().any(|l| labels.contains(&l.name.as_str())))
+                .cloned()
+                .collect())
         }
     }
 }

@@ -7,6 +7,7 @@ mod git;
 mod labels;
 #[allow(dead_code)] // Used by upcoming show/stats commands
 mod metadata;
+mod pipeline;
 mod templates;
 
 use clap::{Parser, Subcommand};
@@ -36,7 +37,13 @@ enum Commands {
     Init,
     /// Re-sync workflow files, issue templates, and labels
     Update,
-    /// Show the current state of the pipeline
+    /// List tasks grouped by pipeline stage
+    List {
+        /// Filter by stage: planning, planned, approved, coding, review, done, abandoned
+        #[arg(long)]
+        stage: Option<String>,
+    },
+    /// Show the current state of the pipeline (alias for list)
     Status,
 }
 
@@ -63,7 +70,8 @@ fn main() {
     let result = match cli.command {
         Some(Commands::Init) => commands::init::run(&ctx),
         Some(Commands::Update) => commands::update::run(&ctx),
-        Some(Commands::Status) => commands::status::run(&ctx),
+        Some(Commands::List { ref stage }) => commands::list::run(&ctx, stage.as_deref()),
+        Some(Commands::Status) => commands::list::run(&ctx, None),
         None => {
             Cli::parse_from(["gh-dagentic", "--help"]);
             Ok(())
