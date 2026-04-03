@@ -5,10 +5,10 @@ mod fs;
 mod gh;
 mod git;
 mod labels;
-#[allow(dead_code)] // Used by upcoming show/stats commands
 mod metadata;
 mod pipeline;
 mod templates;
+mod timeline;
 
 use clap::{Parser, Subcommand};
 use clapfig::{Boundary, Clapfig, SearchPath};
@@ -43,6 +43,11 @@ enum Commands {
         #[arg(long)]
         stage: Option<String>,
     },
+    /// Show details for a specific task (issue number)
+    Show {
+        /// Issue number
+        issue: u64,
+    },
     /// Show the current state of the pipeline (alias for list)
     Status,
 }
@@ -71,6 +76,7 @@ fn main() {
         Some(Commands::Init) => commands::init::run(&ctx),
         Some(Commands::Update) => commands::update::run(&ctx),
         Some(Commands::List { ref stage }) => commands::list::run(&ctx, stage.as_deref()),
+        Some(Commands::Show { issue }) => commands::show::run(&ctx, issue),
         Some(Commands::Status) => commands::list::run(&ctx, None),
         None => {
             Cli::parse_from(["gh-dagentic", "--help"]);
