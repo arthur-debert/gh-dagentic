@@ -138,3 +138,42 @@ Dagentic uses labels to drive the workflow. These are created automatically by `
 | `type: feature` | Issue type |
 | `type: bug` | Issue type |
 | `type: epic` | Issue type (multi-PR planning) |
+
+## Development
+
+### Quality checks
+
+CI and local pre-commit hooks run the exact same shared scripts:
+
+- `scripts/check-format.sh` -- `cargo fmt --check`
+- `scripts/check-rust.sh` -- `cargo clippy -D warnings` + `cargo test`
+
+Pre-commit hooks are managed by [lefthook](https://github.com/evilmartians/lefthook). Install with `brew install lefthook && lefthook install`. The auto-fix phase runs `cargo fmt` and re-stages before checks.
+
+### Testing
+
+Unit and command tests use fake trait implementations (no network, no shell, no temp dirs):
+
+```bash
+cargo test
+```
+
+For manual verification against a real GitHub repo, use [arthur-debert/dagentic-test-repo](https://github.com/arthur-debert/dagentic-test-repo) (private):
+
+```bash
+cd /tmp/dagentic-test-repo   # or clone it
+gh dagentic init
+gh dagentic status
+gh dagentic update
+```
+
+### Releasing
+
+Tag and push to trigger cross-platform binary builds:
+
+```bash
+git tag v0.X.0
+git push origin v0.X.0
+```
+
+The release workflow builds for darwin-arm64, darwin-amd64, linux-arm64, linux-amd64 and publishes bare binaries to a GitHub release. Users pick them up via `gh extension upgrade dagentic`.
