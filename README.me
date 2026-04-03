@@ -1,0 +1,16 @@
+#Dagentic
+
+Dagentic is a simple yet capable system for orchestrating a fully fledged agentic development workflow is simple to run, manage and reason about.
+It's core feature is simplicity, freeing users from the manual and repetitive prompting of original idea / problem -> planning -> reviewed planning -> approval -> developement -> code review -> review fixes -> final review -> human merge .
+
+Features:
+  - Only Requires a Github Repo with Copilot + Primary Agent API KEY.
+  - Leverages GH for wofflow orchestration, logging and events (prs, issues, branches) 
+  - High Level human touchpoints: initial task description, plan approval, final merge (first two on gh issues with pre defined labels, latter at pr)
+  - Planning, execution and review with different models for best of breed and avoiding model bias missing issues.
+  - Base prompst + project specific additions.
+
+Agentic coding workflow orchestration can be incredibly feature rich, configurable and complex, dagentic isn't this at all, but: 
+- A core no-nonse predefined workflow that minimizes user inputs, but keeps them it the critical points (definiting task, aproval of planning and merge) 
+- GitHub issues are used to trigger planning start (by adding the label <>), issue comments will iterate agent / human clarifications and chages to the planning and a label will signal reaady for develpment.
+- The final work, including a secondary agent model riviwe and final check end up with a gh pr  for users to merge. The pr comments are used to request clarifications / changes.

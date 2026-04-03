@@ -1,0 +1,28 @@
+node_modules/
+build/
+.svelte-kit/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+src-tauri/mirrors-wasm/pkg/
+
+# Playwright
+test-results/
+playwright-report/
+
+# Env
+.env
+.env.*
+!.env.example
+.padz
+.DS_Store
+.todos.db
+
+# ML models (downloaded by scripts/fetch-segformer-model.sh)
+static/models/
+static/ort-wasm/
+static/sample-images/
+docs/wip
+.git-trees
+
