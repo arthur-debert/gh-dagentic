@@ -1,6 +1,6 @@
-# Installed by gh-dagentic into .github/workflows/claude-implement.yml
+# Installed by gh-dagentic into .github/workflows/main-agent-implement.yml
 
-name: Claude Implementation
+name: "[Dagentic] Implementation"
 
 on:
   issues:

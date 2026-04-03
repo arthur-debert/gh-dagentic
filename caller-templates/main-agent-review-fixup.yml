@@ -1,10 +1,10 @@
-# Installed by gh-dagentic into .github/workflows/claude-review-fixup.yml
+# Installed by gh-dagentic into .github/workflows/main-agent-review-fixup.yml
 #
 # Two-stage design: the relay job (pull_request_review -> workflow_dispatch)
 # must live here because reusable workflows can't define event triggers.
 # The fixup job calls the reusable workflow in gh-dagentic.
 
-name: Claude Review Fixup
+name: "[Dagentic] Review Fixup"
 
 on:
   pull_request_review:
@@ -39,7 +39,7 @@ jobs:
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              workflow_id: 'claude-review-fixup.yml',
+              workflow_id: 'main-agent-review-fixup.yml',
               ref: 'main',
               inputs: {
                 pr_number: String(context.payload.pull_request.number),

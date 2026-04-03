@@ -1,6 +1,6 @@
-# Installed by gh-dagentic into .github/workflows/claude-plan.yml
+# Installed by gh-dagentic into .github/workflows/main-agent-plan.yml
 
-name: Claude Planning
+name: "[Dagentic] Planning"
 
 on:
   issues:

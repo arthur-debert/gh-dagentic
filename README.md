@@ -6,7 +6,7 @@ Its core feature is simplicity: freeing you from the manual, repetitive cycle of
 
 **Features:**
 
-- Only requires a GitHub repo with Copilot and your primary agent's API key.
+- Only requires a GitHub repo with a side agent for code review and your primary agent's API key.
 - Leverages GitHub for workflow orchestration, logging, and events (PRs, issues, branches).
 - High-level human touchpoints: initial task description, plan approval, and final merge. The first two happen on GitHub issues with predefined labels; the last one at the PR.
 - Planning, execution, and review use different models for best-of-breed results and to avoid single-model bias missing issues.
@@ -16,7 +16,16 @@ Agentic coding workflow orchestration can be incredibly feature-rich, configurab
 
 - A core, no-nonsense, predefined workflow that minimizes user input but keeps you in the loop at the critical points: defining the task, approving the plan, and merging the result.
 - GitHub issues are used to trigger planning (by adding the `status: needs-plan` label). Issue comments iterate agent/human clarifications and changes to the plan, and a label signals ready for development.
-- The final work, including a secondary agent model review and fixup, ends up as a GitHub PR for you to merge. PR comments are used to request clarifications and changes.
+- The final work, including a secondary agent review and fixup, ends up as a GitHub PR for you to merge. PR comments are used to request clarifications and changes.
+
+## Agents
+
+Dagentic uses two agents with distinct roles:
+
+- **Primary agent** (currently [Claude Code](https://docs.anthropic.com/en/docs/claude-code)): handles planning, implementation, and review fixups. Uses your `ANTHROPIC_API_KEY`.
+- **Side agent** (currently [GitHub Copilot](https://docs.github.com/en/copilot)): provides an independent code review on every PR. Requires Copilot Enterprise or Business on the repo.
+
+Using separate agents for implementation and review avoids single-model blind spots.
 
 ## How it works
 
@@ -29,8 +38,8 @@ You create issue        "Add pagination to the API"
   [status: needs-plan]  (auto-labeled by issue template)
         |
         v
-  Planning agent         Opus reads the issue, posts a detailed plan
-  posts plan comment     as a comment, labels the issue plan-ready.
+  Planning agent         Primary agent reads the issue, posts a detailed
+  posts plan comment     plan as a comment, labels the issue plan-ready.
         |
         v
   [status: plan-ready]
@@ -42,19 +51,19 @@ You create issue        "Add pagination to the API"
   [status: plan-approved]
         |
         v
-  Implementation agent   Sonnet creates a branch, implements the plan,
-  opens draft PR         and opens a draft PR.
+  Implementation agent   Primary agent creates a branch, implements
+  opens draft PR         the plan, and opens a draft PR.
         |
         v
   [pr: review-pending]
         |
         v
-  Copilot review         Copilot is automatically requested as a
+  Side agent review      Side agent is automatically requested as a
                          reviewer on the PR.
         |
         v
-  Review fixup agent     Sonnet reads review comments, pushes fixes
-                         or replies with reasoning.
+  Review fixup agent     Primary agent reads review comments, pushes
+                         fixes or replies with reasoning.
         |
         v
   You review and merge   The PR is yours to approve and merge.
@@ -90,7 +99,7 @@ This creates the required labels, copies the workflow files and issue templates 
 
 ### 3. Add a CLAUDE.md
 
-The agent reads your repo's `CLAUDE.md` for project-specific conventions: branching strategy, testing commands, code style, and anything else the agent should know. See the [example](https://github.com/arthur-debert/seer/blob/main/CLAUDE.md) for the expected format.
+The primary agent reads your repo's `CLAUDE.md` for project-specific conventions: branching strategy, testing commands, code style, and anything else the agent should know. See the [example](https://github.com/arthur-debert/seer/blob/main/CLAUDE.md) for the expected format.
 
 ### 4. Create your first issue
 
@@ -100,12 +109,12 @@ Use one of the issue templates (feature, bug, or epic). The `status: needs-plan`
 
 Dagentic is built entirely on GitHub Actions reusable workflows. Your repo contains thin caller workflows that trigger on label and PR events. These call the reusable workflows hosted in this repository, which do the actual work.
 
-| Phase | Model | What happens |
+| Phase | Agent | What happens |
 |-------|-------|-------------|
-| Planning | Claude Opus | Reads issue, posts plan comment, swaps labels |
-| Implementation | Claude Sonnet | Creates branch, implements plan, opens draft PR |
-| Code review | GitHub Copilot | Requested automatically as PR reviewer |
-| Review fixup | Claude Sonnet | Addresses review comments, pushes fixes |
+| Planning | Primary (Claude Opus) | Reads issue, posts plan comment, swaps labels |
+| Implementation | Primary (Claude Sonnet) | Creates branch, implements plan, opens draft PR |
+| Code review | Side (GitHub Copilot) | Requested automatically as PR reviewer |
+| Review fixup | Primary (Claude Sonnet) | Addresses review comments, pushes fixes |
 
 All compute runs on your GitHub Actions runners. All API calls use your `ANTHROPIC_API_KEY`. Nothing runs on or bills to Dagentic's infrastructure.
 
@@ -124,7 +133,7 @@ Dagentic uses labels to drive the workflow. These are created automatically by `
 | `status: needs-plan` | Triggers the planning agent |
 | `status: plan-ready` | Plan posted, waiting for your review |
 | `status: plan-approved` | You approved the plan, triggers implementation |
-| `pr: review-pending` | Draft PR opened, triggers Copilot review |
+| `pr: review-pending` | Draft PR opened, triggers side agent review |
 | `pr: review-addressed` | Review comments addressed |
 | `type: feature` | Issue type |
 | `type: bug` | Issue type |

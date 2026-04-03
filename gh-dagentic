@@ -15,7 +15,7 @@ LABELS=(
     "status: needs-plan|c5def5|Triggers the planning agent"
     "status: plan-ready|0e8a16|Plan posted, awaiting human review"
     "status: plan-approved|5319e7|Plan approved, triggers implementation"
-    "pr: review-pending|fbca04|Draft PR opened, triggers Copilot review"
+    "pr: review-pending|fbca04|Draft PR opened, triggers side agent review"
     "pr: review-addressed|0e8a16|Review comments addressed"
     "type: feature|a2eeef|Feature request"
     "type: bug|d73a4a|Bug report"

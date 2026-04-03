@@ -1,6 +1,6 @@
-# Installed by gh-dagentic into .github/workflows/copilot-review.yml
+# Installed by gh-dagentic into .github/workflows/side-agent-review.yml
 
-name: Request Copilot Review
+name: "[Dagentic] Side Agent Review"
 
 on:
   pull_request:
@@ -12,6 +12,6 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'pr: review-pending')
     permissions:
       pull-requests: write
-    uses: arthur-debert/gh-dagentic/.github/workflows/copilot-review.yml@main
+    uses: arthur-debert/gh-dagentic/.github/workflows/side-agent-review.yml@main
     with:
       pr_number: ${{ github.event.pull_request.number }}
