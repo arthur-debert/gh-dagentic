@@ -39,11 +39,7 @@ impl InstallResult {
     }
 }
 
-pub fn install(
-    fs: &dyn Filesystem,
-    set: &TemplateSet,
-    repo_root: &Path,
-) -> Result<InstallResult> {
+pub fn install(fs: &dyn Filesystem, set: &TemplateSet, repo_root: &Path) -> Result<InstallResult> {
     let dest = repo_root.join(set.dest_subdir());
     fs.create_dir_all(&dest)
         .with_context(|| format!("creating {}", dest.display()))?;

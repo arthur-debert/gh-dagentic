@@ -1,0 +1,13 @@
+pre-commit:
+  commands:
+    # --- Auto-fix phase (priority 1, runs first, re-stages fixes) ---
+    cargo-fmt:
+      glob: '*.rs'
+      run: cargo fmt
+      stage_fixed: true
+      priority: 1
+
+    # --- Check phase (priority 2, runs after fixes are staged) ---
+    rust:
+      run: bash scripts/hook-wrapper.sh "rust" bash scripts/check-rust.sh
+      priority: 2

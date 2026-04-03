@@ -10,7 +10,10 @@ pub fn run(ctx: &Context) -> Result<()> {
     let root = ctx.repo.repo_root()?;
     let remote = ctx.repo.remote_url("origin")?;
     if !git::is_github_url(&remote) {
-        bail!("origin remote does not point to GitHub.\n  Found: {}", remote);
+        bail!(
+            "origin remote does not point to GitHub.\n  Found: {}",
+            remote
+        );
     }
 
     println!("Updating workflow files...");

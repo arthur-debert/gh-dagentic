@@ -77,11 +77,7 @@ mod tests {
     fn no_duplicate_labels() {
         let names: Vec<_> = LABELS.iter().map(|l| l.name).collect();
         for (i, name) in names.iter().enumerate() {
-            assert!(
-                !names[i + 1..].contains(name),
-                "duplicate label: {}",
-                name
-            );
+            assert!(!names[i + 1..].contains(name), "duplicate label: {}", name);
         }
     }
 

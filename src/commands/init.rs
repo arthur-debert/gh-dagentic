@@ -10,7 +10,10 @@ pub fn run(ctx: &Context) -> Result<()> {
     let root = ctx.repo.repo_root()?;
     let remote = ctx.repo.remote_url("origin")?;
     if !git::is_github_url(&remote) {
-        bail!("origin remote does not point to GitHub.\n  Found: {}", remote);
+        bail!(
+            "origin remote does not point to GitHub.\n  Found: {}",
+            remote
+        );
     }
 
     println!("Installing workflow files...");
@@ -56,7 +59,9 @@ pub fn run(ctx: &Context) -> Result<()> {
         println!("(branching, testing, code style). The agents read it before every task.");
     }
 
-    println!("\n\x1b[1mDone.\x1b[0m Create an issue using one of the templates to start the pipeline.");
+    println!(
+        "\n\x1b[1mDone.\x1b[0m Create an issue using one of the templates to start the pipeline."
+    );
     Ok(())
 }
 
@@ -85,11 +90,7 @@ mod tests {
         PathBuf::from("/repo")
     }
 
-    fn make_ctx<'a>(
-        fs: &'a FakeFs,
-        host: &'a FakeGitHost,
-        repo: &'a FakeGitRepo,
-    ) -> Context<'a> {
+    fn make_ctx<'a>(fs: &'a FakeFs, host: &'a FakeGitHost, repo: &'a FakeGitRepo) -> Context<'a> {
         Context { fs, host, repo }
     }
 

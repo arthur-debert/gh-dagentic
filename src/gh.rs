@@ -50,7 +50,14 @@ impl GitHost for GhCli {
     fn create_label(&self, name: &str, color: &str, description: &str) -> Result<()> {
         // --force makes this idempotent (updates if exists)
         let _ = Self::run(&[
-            "label", "create", name, "--color", color, "--description", description, "--force",
+            "label",
+            "create",
+            name,
+            "--color",
+            color,
+            "--description",
+            description,
+            "--force",
         ]);
         Ok(())
     }
@@ -62,7 +69,13 @@ impl GitHost for GhCli {
 
     fn list_issues(&self, label: &str) -> Result<Vec<Issue>> {
         let output = Self::run(&[
-            "issue", "list", "--label", label, "--limit", "20", "--json",
+            "issue",
+            "list",
+            "--label",
+            label,
+            "--limit",
+            "20",
+            "--json",
             "number,title,url",
         ])?;
         Ok(serde_json::from_slice(&output)?)
@@ -70,7 +83,13 @@ impl GitHost for GhCli {
 
     fn list_prs(&self, label: &str) -> Result<Vec<PullRequest>> {
         let output = Self::run(&[
-            "pr", "list", "--label", label, "--limit", "20", "--json",
+            "pr",
+            "list",
+            "--label",
+            label,
+            "--limit",
+            "20",
+            "--json",
             "number,title,url",
         ])?;
         Ok(serde_json::from_slice(&output)?)

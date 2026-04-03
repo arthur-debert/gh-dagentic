@@ -45,7 +45,10 @@ pub fn run(ctx: &Context) -> Result<()> {
     let _root = ctx.repo.repo_root()?;
     let remote = ctx.repo.remote_url("origin")?;
     if !git::is_github_url(&remote) {
-        bail!("origin remote does not point to GitHub.\n  Found: {}", remote);
+        bail!(
+            "origin remote does not point to GitHub.\n  Found: {}",
+            remote
+        );
     }
 
     println!("\x1b[1mDagentic Pipeline Status\x1b[0m\n");
@@ -83,8 +86,8 @@ mod tests {
     use super::*;
     use crate::context::Context;
     use crate::fs::fake::FakeFs;
-    use crate::gh::fake::FakeGitHost;
     use crate::gh::Issue;
+    use crate::gh::fake::FakeGitHost;
     use crate::git::fake::FakeGitRepo;
     use std::path::PathBuf;
 
